@@ -1,0 +1,7 @@
+tweepy
+mysql-connector
+wheel
+textblob
+pandas
+plotly_express
+nltk
