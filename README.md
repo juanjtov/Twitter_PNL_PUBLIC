@@ -18,5 +18,5 @@ Activate the environment: source activate venv/bin/activate
 Install the required libraries: pip install -r requirements.txt
 
 
-LICENSE
+## LICENSE
 This project has the MIT license.
