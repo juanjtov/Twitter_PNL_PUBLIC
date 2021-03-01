@@ -1,5 +1,5 @@
 tweepy
-mysql-connector
+mysql-connector-python
 wheel
 textblob
 pandas
