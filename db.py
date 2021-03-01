@@ -3,14 +3,16 @@ from config import Settings
 import pandas as pd
 import time
 import datetime
+from config import Dbsettings
 
 
 
 mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="passwd",
-    database="DATABASENAME",
+    host=Dbsettings.HOST,
+    user=Dbsettings.USER,
+    passwd=Dbsettings.PASSWORD,
+    database=Dbsettings.DATABASE,
+    port=Dbsettings.PORT,
     charset = 'utf8'
 )
 
@@ -37,10 +39,11 @@ def storage(id_str, created_at, text, polarity, subjectivity, user_created_at, u
 def extracting_tweets():
     
     db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="passwd",
-    database="DATABASENAME",
+    host = Dbsettings.HOST,
+    user = Dbsettings.USER,
+    passwd = Dbsettings.PASSWORD,
+    database = Dbsettings.DATABASE,
+    port = Dbsettings.PORT, 
     charset = 'utf8'
     )
 
