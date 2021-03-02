@@ -25,7 +25,7 @@ INV_COUNTRY_DICT = dict((v,k) for k,v in COUNTRY_DICT.items())
 def clean_transform_data(df):
     #As we only display real-time tweets posted in last 30 minutes, groups of 2-second interval could best display on the screen in practice
     result = df.groupby([pd.Grouper(key='created_at', freq='2s'), 'polarity']).count().unstack(fill_value=0).stack().reset_index()
-    result = result.rename(columns={"id_str": "Num of {} mentions".format(Settings.TRACK_WORDS), "created_at":"Time in UTC"})  
+    result = result.rename(columns={"id_tweet": "Num of {} mentions".format(Settings.TRACK_WORDS), "created_at":"Time in UTC"})  
     #Record the time series with 2-second interval for further index usage.
     time_series = result["Time in UTC"][result['polarity']==0].reset_index(drop=True)
     return result, time_series

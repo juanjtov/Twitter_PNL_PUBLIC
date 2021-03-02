@@ -19,13 +19,10 @@ auth.set_access_token(Credentials.ACCESS_TOKEN,  \
 #CREATE THE API OBJECT
 api = tweepy.API(auth)
 
-#CREATE DATABASE
+#CREATE DATABASE TABLES
 #FIRST EXECUTE DB.PY
 
-
-
 #Creat the tweepy Stream Listener
-# Part of MyStreamListener in Main.ipynb
 # Streaming With Tweepy 
 # Override tweepy.StreamListener to add logic to on_status
 class MyStreamListener(tweepy.StreamListener):
@@ -36,7 +33,7 @@ class MyStreamListener(tweepy.StreamListener):
         # be received
             return True
         # Extract attributes from each tweet
-        id_str = status.id_str
+        id_tweet = status.id_str
         created_at = status.created_at
         text = deEmojify(status.text)    # Pre-processing the text
         cleaned_text = clean_tweet(text)
@@ -48,7 +45,6 @@ class MyStreamListener(tweepy.StreamListener):
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
 
-        
         user_created_at = status.user.created_at
         user_location = deEmojify(status.user.location)
         user_description = deEmojify(status.user.description)
@@ -63,11 +59,8 @@ class MyStreamListener(tweepy.StreamListener):
         retweet_count = status.retweet_count
         favorite_count = status.favorite_count
         
-        print(status.text)
-        print(f'Long: {longitude}, Lati: {latitude}')
-
         #store data un mysql
-        storage(id_str, created_at, cleaned_text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count,longitude, latitude,\
+        storage(id_tweet, created_at, cleaned_text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count,longitude, latitude,\
                 retweet_count, favorite_count)
 
 
@@ -100,15 +93,16 @@ def clean_tweet(tweet):
 
 
 df = extracting_tweets()
-print('**************************')
 print(df)
-print('**************')
+
 result = clean_transform_data(df)
+print(result)
 
 fd = pnl_module(df)
 print(fd)
 
 gd = geo_distr_data(df)
+print(gd)
 
 #MAKE THE PLOTt
 plot_results(result[0], result[1], fd, gd) 
