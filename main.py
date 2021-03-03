@@ -28,50 +28,108 @@ api = tweepy.API(auth)
 class MyStreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
-        if status.retweeted:
-        # Avoid retweeted info, and only original tweets will 
-        # be received
-            return True
-        # Extract attributes from each tweet
-        id_tweet = status.id_str
-        created_at = status.created_at
-        text = deEmojify(status.text)    # Pre-processing the text
+        
+        # if status.retweeted:
+        # # Avoid retweeted info, and only original tweets will 
+        # # be received
+        #     return True
+
+        # Clean The text
+        text = deEmojify(status.text)
         cleaned_text = clean_tweet(text)
         print(cleaned_text)
-        user_created_at = status.user.created_at
-
-        #SENTIMENT ANALYSIS
-        sentiment = TextBlob(text).sentiment
-        polarity = sentiment.polarity
-        subjectivity = sentiment.subjectivity
-
-        user_created_at = status.user.created_at
-        user_location = deEmojify(status.user.location)
-        user_description = deEmojify(status.user.description)
-        user_followers_count =status.user.followers_count
-        longitude = None
-        latitude = None
         
-        if status.coordinates:
-            longitude = status.coordinates['coordinates'][0]
-            latitude = status.coordinates['coordinates'][1]
+        if 'colombia'  in cleaned_text.lower():
+            results = tweet_info(status, cleaned_text)
+            print(results)
+            # print('******************************************************')
+            # print(status.text)
+            # id_tweet = status.id_str
+            # created_at = status.created_at
+            # # text = deEmojify(status.text)    # Pre-processing the text
+            # # cleaned_text = clean_tweet(text)
+            # user_created_at = status.user.created_at
 
-        retweet_count = status.retweet_count
-        favorite_count = status.favorite_count
+            # #SENTIMENT ANALYSIS
+            # sentiment = TextBlob(text).sentiment
+            # polarity = sentiment.polarity
+            # subjectivity = sentiment.subjectivity
+
+            # user_created_at = status.user.created_at
+            # user_location = deEmojify(status.user.location)
+            # user_description = deEmojify(status.user.description)
+            # user_followers_count =status.user.followers_count
+            # longitude = None
+            # latitude = None
+            
+            # if status.coordinates:
+            #     longitude = status.coordinates['coordinates'][0]
+            #     latitude = status.coordinates['coordinates'][1]
+
+            # retweet_count = status.retweet_count
+            # favorite_count = status.favorite_count
+            
+            #store data in Database
+            # storage(results['id_tweet'], results['created_at'], cleaned_text, polarity, \
+            #     subjectivity, user_created_at, user_location, \
+            #     user_description, user_followers_count,longitude, \
+            #     latitude, retweet_count, favorite_count)
+        elif 'rappi'  in cleaned_text.lower():
+            results = tweet_info(status, cleaned_text)
+            print(results)
         
-        #store data un mysql
-        storage(id_tweet, created_at, cleaned_text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count,longitude, latitude,\
-                retweet_count, favorite_count)
+        elif 'restaurante'  in cleaned_text.lower():
+            results = tweet_info(status, cleaned_text)
+            print(results)
+
+        elif 'covid'  in cleaned_text.lower():
+            results = tweet_info(status, cleaned_text)
+            print(results)
+
+        elif 'comida'  in cleaned_text.lower():
+            results = tweet_info(status, cleaned_text)
+            print(results)
+
 
 
     def on_error(self, status_code):
         '''
         Since Twitter API has rate limits, 
-        stop srcraping data as it exceed to the thresold.
+        stop scraping data as it exceed to the thresold.
         '''
         if status_code == 420:
             # return False to disconnect the stream
             return False
+
+
+def tweet_info(status, cleaned_text):
+    '''
+    Extract all the information from the streamed tweet
+    '''
+    tweet_dict = {}
+    tweet_dict['id_tweet'] = status.id_str
+    tweet_dict['created_at'] = status.created_at
+    tweet_dict['cleaned_tweet'] = cleaned_text
+    tweet_dict['user_created_at'] = status.user.created_at
+
+    #SENTIMENT ANALYSIS
+    tweet_dict['sentiment'] = TextBlob(cleaned_text).sentiment
+    tweet_dict['polarity'] = tweet_dict['sentiment'].polarity
+    tweet_dict['subjectivity'] = tweet_dict['sentiment'].subjectivity
+
+    tweet_dict['user_created_at'] = status.user.created_at
+    tweet_dict['user_location'] = deEmojify(status.user.location)
+    tweet_dict['user_description'] = deEmojify(status.user.description)
+    tweet_dict['user_followers_count'] =status.user.followers_count
+    
+    if status.coordinates:
+        tweet_dict['longitude'] = status.coordinates['coordinates'][0]
+        tweet_dict['latitude'] = status.coordinates['coordinates'][1]
+
+    tweet_dict['retweet_count'] = status.retweet_count
+    tweet_dict['favorite_count'] = status.favorite_count
+
+    return tweet_dict
 
 #preprocessing text
 def deEmojify(text):
@@ -92,25 +150,27 @@ def clean_tweet(tweet):
 
 
 
-df = extracting_tweets()
-print(df)
+# df = extracting_tweets()
+# print(df)
 
-result = clean_transform_data(df)
-print(result)
+# result = clean_transform_data(df)
+# print(result)
 
-fd = pnl_module(df)
-print(fd)
+# fd = pnl_module(df)
+# print(fd)
 
-gd = geo_distr_data(df)
-print(gd)
+# gd = geo_distr_data(df)
+# print(gd)
 
-#MAKE THE PLOTt
-plot_results(result[0], result[1], fd, gd) 
+# #MAKE THE PLOTt
+# plot_results(result[0], result[1], fd, gd) 
 
 #CREATE THE STREAM LISTENER
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener)
-myStream.filter(languages=['es'], track = [Settings.TRACK_WORDS])
+#myStream.filter(languages=['es'], track = [Settings.TRACK_WORDS])
+colombia_square_location = [-76.99887222850893, 2.767277890600095, -72.29672379100893,11.781129221362258]
+myStream.filter(languages=['es'], locations=colombia_square_location)
 
 # However, this part won't be reached as the stream listener won't stop automatically. Press STOP button to finish the process.
 mydb.close()
