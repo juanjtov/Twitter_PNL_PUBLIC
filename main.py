@@ -40,57 +40,56 @@ class MyStreamListener(tweepy.StreamListener):
         print(cleaned_text)
         
         if 'colombia'  in cleaned_text.lower():
-            results = tweet_info(status, cleaned_text)
-            print(results)
-            # print('******************************************************')
-            # print(status.text)
-            # id_tweet = status.id_str
-            # created_at = status.created_at
-            # # text = deEmojify(status.text)    # Pre-processing the text
-            # # cleaned_text = clean_tweet(text)
-            # user_created_at = status.user.created_at
-
-            # #SENTIMENT ANALYSIS
-            # sentiment = TextBlob(text).sentiment
-            # polarity = sentiment.polarity
-            # subjectivity = sentiment.subjectivity
-
-            # user_created_at = status.user.created_at
-            # user_location = deEmojify(status.user.location)
-            # user_description = deEmojify(status.user.description)
-            # user_followers_count =status.user.followers_count
-            # longitude = None
-            # latitude = None
+            tweet_info(status, cleaned_text, word='Colombia')
             
-            # if status.coordinates:
-            #     longitude = status.coordinates['coordinates'][0]
-            #     latitude = status.coordinates['coordinates'][1]
-
-            # retweet_count = status.retweet_count
-            # favorite_count = status.favorite_count
             
-            #store data in Database
-            # storage(results['id_tweet'], results['created_at'], cleaned_text, polarity, \
-            #     subjectivity, user_created_at, user_location, \
-            #     user_description, user_followers_count,longitude, \
-            #     latitude, retweet_count, favorite_count)
+            
         elif 'rappi'  in cleaned_text.lower():
-            results = tweet_info(status, cleaned_text)
-            print(results)
+            tweet_info(status, cleaned_text, word='rappi')
+            
+             #store data in Database
+            # storage(results['tracked_word'], results['id_tweet'], \
+            # results['created_at'], \
+            # results['cleaned_tweet'], results['polarity'], \
+            # results['subjectivity'], results['user_created_at'],\
+            # results['user_location'], results['user_description'], \
+            # results['user_followers_count'], results['longitude'], \
+            # results['latitude'], results['retweet_count'], \
+            # results['favorite_count'])
         
         elif 'restaurante'  in cleaned_text.lower():
-            results = tweet_info(status, cleaned_text)
-            print(results)
+            tweet_info(status, cleaned_text, word='restaurante')
+            
+             #store data in Database
+            
 
         elif 'covid'  in cleaned_text.lower():
-            results = tweet_info(status, cleaned_text)
-            print(results)
+            tweet_info(status, cleaned_text, word='covid')
+            
+             #store data in Database
+            # storage(results['tracked_word'], results['id_tweet'], \
+            # results['created_at'], \
+            # results['cleaned_tweet'], results['polarity'], \
+            # results['subjectivity'], results['user_created_at'],\
+            # results['user_location'], results['user_description'], \
+            # results['user_followers_count'], results['longitude'], \
+            # results['latitude'], results['retweet_count'], \
+            # results['favorite_count'])
 
         elif 'comida'  in cleaned_text.lower():
-            results = tweet_info(status, cleaned_text)
-            print(results)
+            tweet_info(status, cleaned_text, word='comida')
+            
+             #store data in Database
+            # storage(results['tracked_word'], results['id_tweet'], \
+            # results['created_at'], \
+            # results['cleaned_tweet'], results['polarity'], \
+            # results['subjectivity'], results['user_created_at'],\
+            # results['user_location'], results['user_description'], \
+            # results['user_followers_count'], results['longitude'], \
+            # results['latitude'], results['retweet_count'], \
+            # results['favorite_count'])
 
-
+       
 
     def on_error(self, status_code):
         '''
@@ -102,11 +101,12 @@ class MyStreamListener(tweepy.StreamListener):
             return False
 
 
-def tweet_info(status, cleaned_text):
+def tweet_info(status, cleaned_text, word):
     '''
     Extract all the information from the streamed tweet
     '''
     tweet_dict = {}
+    tweet_dict['tracked_word'] = word
     tweet_dict['id_tweet'] = status.id_str
     tweet_dict['created_at'] = status.created_at
     tweet_dict['cleaned_tweet'] = cleaned_text
@@ -122,6 +122,9 @@ def tweet_info(status, cleaned_text):
     tweet_dict['user_description'] = deEmojify(status.user.description)
     tweet_dict['user_followers_count'] =status.user.followers_count
     
+    tweet_dict['longitude'] = None
+    tweet_dict['latitude'] = None
+
     if status.coordinates:
         tweet_dict['longitude'] = status.coordinates['coordinates'][0]
         tweet_dict['latitude'] = status.coordinates['coordinates'][1]
@@ -129,7 +132,16 @@ def tweet_info(status, cleaned_text):
     tweet_dict['retweet_count'] = status.retweet_count
     tweet_dict['favorite_count'] = status.favorite_count
 
-    return tweet_dict
+    storage(tweet_dict['tracked_word'], tweet_dict['id_tweet'], \
+            tweet_dict['created_at'], \
+            tweet_dict['cleaned_tweet'], tweet_dict['polarity'], \
+            tweet_dict['subjectivity'], tweet_dict['user_created_at'],\
+            tweet_dict['user_location'], tweet_dict['user_description'], \
+            tweet_dict['user_followers_count'], tweet_dict['longitude'], \
+            tweet_dict['latitude'], tweet_dict['retweet_count'], \
+            tweet_dict['favorite_count'])
+
+    return 'ok'
 
 #preprocessing text
 def deEmojify(text):

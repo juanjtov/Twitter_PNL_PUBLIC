@@ -23,16 +23,30 @@ if mydb.is_connected():
 
     mycursor.close()
 
-def storage(id_tweet, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count,longitude, latitude,\
+def storage(tracked_word, id_tweet, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count,longitude, latitude,\
                 retweet_count, favorite_count):
+    
+    print('Entramos')
     if mydb.is_connected():
         mycursor = mydb.cursor()
-        val = (id_tweet, created_at, text, polarity, subjectivity, user_created_at, user_location, \
-              user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
-        sql = "INSERT INTO {} (id_tweet, created_at, text, polarity, subjectivity, \
+        #Tracked words query
+        query_word_id = f"SELECT word_id FROM trackwords WHERE word='{tracked_word}'"
+        
+        mycursor.execute(query_word_id)
+        word_ids = mycursor.fetchall()
+        print(word_ids)
+        word_id = word_ids[0][0]
+        print(word_id)
+        val = (id_tweet, word_id, created_at, text, polarity, subjectivity, user_created_at, \
+             user_location, user_description, user_followers_count, longitude, latitude,\
+                  retweet_count, favorite_count)
+        print(val)
+        sql = "INSERT INTO twtanalysis (id_tweet, word_id, created_at, text, polarity, subjectivity, \
             user_created_at, user_location, user_description, user_followers_count, \
             longitude, latitude, retweet_count, favorite_count)\
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(Settings.TABLE_NAME)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+        print(sql)
         
         mycursor.execute(sql, val)
         mydb.commit()
@@ -54,8 +68,8 @@ def extracting_tweets():
     timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=3, minutes=20)).strftime('%Y-%m-%d %H:%M:%S')
 
     #make the query
-    query = f"SELECT id_tweet, text, created_at, polarity, user_location \
-             FROM {Settings.TABLE_NAME} WHERE created_at >= '{timenow}' "
+    query = f"SELECT id_tweet, word_id, text, created_at, polarity, user_location \
+             FROM twtanalysis WHERE created_at >= '{timenow}' "
     df = pd.read_sql(query, con=db_connection)
     
     #CONVERT DATATIME(MySQL data type) into Datetime (Pandas)
