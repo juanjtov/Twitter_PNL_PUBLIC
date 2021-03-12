@@ -5,3 +5,4 @@ textblob
 pandas
 plotly_express
 nltk
+GetOldTweets3

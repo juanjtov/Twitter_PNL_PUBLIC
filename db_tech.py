@@ -7,31 +7,15 @@ from config import Dbsettings
 
 
 
-mydb = mysql.connector.connect(
-    host=Dbsettings.HOST,
-    user=Dbsettings.USER,
-    passwd=Dbsettings.PASSWORD,
-    database=Dbsettings.DATABASE,
-    port=Dbsettings.PORT,
-    charset = 'utf8'
-)
-
-if mydb.is_connected():
-    mycursor = mydb.cursor()
-    mycursor.execute(f'CREATE TABLE IF NOT EXISTS {Settings.TABLE_NAME} ({Settings.TABLE_ATTRIBUTES})')
-    mydb.commit()
-
-    mycursor.close()
-
 def storage(table, tracked_word, id_tweet, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count,longitude, latitude,\
                 retweet_count, favorite_count):
 
     mydb = mysql.connector.connect(
-    host=Dbsettings.HOST,
-    user=Dbsettings.USER,
-    passwd=Dbsettings.PASSWORD,
-    database=Dbsettings.DATABASE,
-    port=Dbsettings.PORT,
+    host=Dbsettings.HOST2,
+    user=Dbsettings.USER2,
+    passwd=Dbsettings.PASSWORD2,
+    database=Dbsettings.DATABASE2,
+    port=Dbsettings.PORT2,
     charset = 'utf8'
     )
     
@@ -39,22 +23,29 @@ def storage(table, tracked_word, id_tweet, created_at, text, polarity, subjectiv
     print(mydb.is_connected())
     if mydb.is_connected():
         mycursor = mydb.cursor()
-        #Tracked words query
-        query_word_id = f"SELECT word_id FROM {table} WHERE word='{tracked_word}'"
+        mycursor.execute(f'CREATE TABLE IF NOT EXISTS {table} ({Settings.TABLE_ATTRIBUTES_2})')
+        #Insert if not exist the word column has a UNIQUE CONSTRAINT
+        try:
+            mycursor.execute(f"INSERT INTO newtrackwords (word) VALUES ('{tracked_word}')")
+            mydb.commit()
+        except mysql.connector.IntegrityError as err:
+            print('Word already in the Database.')
+
+        #Query the id of the tracked word
+        query_word_id = f"SELECT word_id FROM newtrackwords WHERE word='{tracked_word}'"
         
         mycursor.execute(query_word_id)
         word_ids = mycursor.fetchall()
-        print(word_ids)
         word_id = word_ids[0][0]
-        print(word_id)
-        val = (id_tweet, word_id, created_at, text, polarity, subjectivity, user_created_at, \
+       
+        val = (word_id, id_tweet, created_at, text, polarity, subjectivity, user_created_at, \
              user_location, user_description, user_followers_count, longitude, latitude,\
                   retweet_count, favorite_count)
         print(val)
-        sql = "INSERT INTO twtanalysis (id_tweet, word_id, created_at, text, polarity, subjectivity, \
+        sql = "INSERT INTO {} (word_id, id_tweet, created_at, text, polarity, subjectivity, \
             user_created_at, user_location, user_description, user_followers_count, \
             longitude, latitude, retweet_count, favorite_count)\
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(table)
 
         print(sql)
         

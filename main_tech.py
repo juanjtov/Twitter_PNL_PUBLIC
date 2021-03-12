@@ -3,9 +3,7 @@ import pandas as pd
 from textblob import TextBlob
 import re
 
-
-import db
-from db import storage, mydb, extracting_tweets
+from db_tech import storage, extracting_tweets
 from config import Credentials, Settings
 from data_analysis import clean_transform_data, plot_results, pnl_module, geo_distr_data
 
@@ -22,9 +20,6 @@ api = tweepy.API(auth)
 #CREATE DATABASE TABLES
 #FIRST EXECUTE DB.PY
 
-#Creat the tweepy Stream Listener
-# Streaming With Tweepy 
-# Override tweepy.StreamListener to add logic to on_status
 class MyStreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
@@ -38,26 +33,9 @@ class MyStreamListener(tweepy.StreamListener):
         text = deEmojify(status.text)
         cleaned_text = clean_tweet(text)
         print(cleaned_text)
-        
-        if 'colombia'  in cleaned_text.lower():
-            tweet_info(status, cleaned_text, word='Colombia', table='trackwords')
-              
-        elif 'rappi'  in cleaned_text.lower():
-            tweet_info(status, cleaned_text, word='rappi',table='trackwords')
-                    
-        elif 'restaurante'  in cleaned_text.lower():
-            tweet_info(status, cleaned_text, word='restaurante',table='trackwords')
-        
-        elif 'covid'  in cleaned_text.lower():
-            tweet_info(status, cleaned_text, word='covid',table='trackwords')
-            
-        elif 'comida'  in cleaned_text.lower():
-            tweet_info(status, cleaned_text, word='comida',table='trackwords')
+        tweet_info(status, cleaned_text, word=Settings.TRACK_WORDS, table=Settings.TABLE_NAME)
 
-        elif 'bucaramanga'  in cleaned_text.lower():
-            tweet_info(status, cleaned_text, word='Bucaramanga',table='trackwords')    
-             
-
+      
     def on_error(self, status_code):
         '''
         Since Twitter API has rate limits, 
@@ -130,14 +108,9 @@ def clean_tweet(tweet):
 
 
 
-
-
 #CREATE THE STREAM LISTENER
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener)
-#myStream.filter(languages=['es'], track = [Settings.TRACK_WORDS])
-colombia_square_location = [-76.99887222850893, 2.767277890600095, -72.29672379100893,11.781129221362258]
-myStream.filter(languages=['es'], locations=colombia_square_location, is_async=True)
+myStream.filter(languages=['en'], track = [Settings.TRACK_WORDS], is_async=True)
 
-# However, this part won't be reached as the stream listener won't stop automatically. Press STOP button to finish the process.
-mydb.close()
+
